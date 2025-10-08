@@ -1,14 +1,12 @@
 import streamlit as st # type: ignore
 from huggingface_hub import InferenceClient # type: ignore
 from pymongo import MongoClient # type: ignore
-import json
 import hashlib
 from datetime import datetime
-import os
 
 # --- Configuration ---
 st.set_page_config(
-    page_title="AI Workout & Diet Planner",
+    page_title="Workout & Diet Planner",
     page_icon="💪",
     layout="wide"
 )
@@ -136,7 +134,7 @@ if not st.session_state.logged_in:
             else:
                 st.sidebar.warning("Please enter your username and password.")
 
-    st.info("Please log in or register to use the planner.")
+    st.info("Please log in or register to use the planner. Open sidebar by clicking the top-left icon.")
 
 # --- Main Application ---
 if st.session_state.logged_in:
@@ -246,7 +244,7 @@ if st.session_state.logged_in:
                 mime="text/plain"
             )
         else:
-            st.info("Fill in your details in the sidebar and click 'Generate My Plan' to start!")
+            st.info("Fill in your details in the sidebar and click 'Generate My Plan' to start! Open sidebar by clicking the top-left icon.")
 
     with main_tab2:
         st.header("Your Plan History")
