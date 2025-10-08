@@ -59,7 +59,8 @@ Your web browser should automatically open with the application running!
 ## 📁 Project Structure
 workout_planner/
 ├── .streamlit/
-│   └── secrets.toml
-├── app.py
-├── requirements.txt
-└── README.md
+│   └── secrets.toml         # Contains Streamlit app secrets (API keys, config, etc.)
+├── app.py                   # Main Streamlit application file
+├── requirements.txt         # List of dependencies and libraries required for the project
+└── README.md                # Project documentation file
+
