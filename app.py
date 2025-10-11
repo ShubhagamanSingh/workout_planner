@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="Workout & Diet Planner",
     page_icon="💪",
     layout="wide",
-    #initial_sidebar_state="collapsed"  # Start with sidebar collapsed on mobile
+    initial_sidebar_state="collapsed"  # Start with sidebar collapsed on mobile
 )
 # --- Custom CSS for Mobile-Friendly UI ---
 st.markdown("""
@@ -482,4 +482,5 @@ if st.session_state.logged_in:
                         st.markdown(entry["diet_plan"])
         
         st.markdown("</div>", unsafe_allow_html=True)
+
 
