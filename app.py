@@ -3,16 +3,14 @@ from huggingface_hub import InferenceClient # type: ignore
 from pymongo import MongoClient # type: ignore
 import hashlib
 from datetime import datetime
-
 # --- Configuration ---
 st.set_page_config(
     page_title="Workout & Diet Planner",
     page_icon="💪",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"  # Start with sidebar collapsed on mobile
 )
-
-
-# --- Custom CSS for Modern UI ---
+# --- Custom CSS for Mobile-Friendly UI ---
 st.markdown("""
 <style>
     .main {
@@ -21,44 +19,40 @@ st.markdown("""
     
     .header-container {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 3rem 2rem;
+        padding: 2rem 1rem;
         border-radius: 0 0 25px 25px;
-        margin-bottom: 2rem;
-        margin-top: -10rem;
+        margin-bottom: 1rem;
         color: white;
         text-align: center;
     }
     
     .custom-card {
         background: white;
-        padding: 2rem;
-        border-radius: 20px;
+        padding: 1.5rem;
+        border-radius: 15px;
         border: 1px solid #e0e0e0;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
-    }
-    
-    .custom-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        margin-bottom: 1rem;
     }
     
     .feature-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
+        padding: 1rem;
+        border-radius: 12px;
         text-align: center;
-        margin: 0.5rem;
+        margin: 0.3rem;
     }
     
-    .metric-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        border-left: 5px solid #667eea;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    .mobile-sidebar-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
         margin: 0.5rem 0;
     }
     
@@ -67,67 +61,48 @@ st.markdown("""
         color: white;
         border: none;
         border-radius: 25px;
-        padding: 0.75rem 2rem;
+        padding: 0.75rem 1.5rem;
         font-weight: 600;
         font-size: 1rem;
-        transition: all 0.3s ease;
         width: 100%;
     }
     
-    .stButton button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    }
-    
-    .stTextInput input, .stTextArea textarea, .stNumberInput input {
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-        padding: 0.75rem;
-        font-size: 1rem;
-    }
-    
-    .stTextInput input:focus, .stTextArea textarea:focus, .stNumberInput input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .success-message {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 1rem 0;
-    }
-    
-    .info-message {
-        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 1rem 0;
-    }
-    
-    .plan-section {
-        border: 2px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 1.5rem;
-        background: white;
-        margin: 1rem 0;
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+        .header-container {
+            padding: 1.5rem 1rem;
+        }
+        
+        .header-container h1 {
+            font-size: 2rem !important;
+        }
+        
+        .custom-card {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .feature-card {
+            padding: 0.8rem;
+            margin: 0.2rem;
+        }
+        
+        /* Make sidebar more accessible on mobile */
+        .css-1d391kg {
+            width: 85% !important;
+        }
     }
     
     /* Hide default Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    .sidebar .sidebar-content {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    }
 </style>
 """, unsafe_allow_html=True)
 
+
+
+# [Keep all your existing backend functions and MongoDB code exactly the same...]
 # --- User Authentication and Data Management ---
 # --- MongoDB Connection ---
 @st.cache_resource
@@ -146,21 +121,15 @@ def get_mongo_client():
 users_collection = get_mongo_client()
 
 def load_users():
-    """Loads a specific user from MongoDB."""
-    # This function is no longer needed in this form, we'll query directly.
-    # We keep it as a placeholder to minimize code changes, but it's unused.
     pass
 
 def hash_password(password):
-    """Hashes a password for storing."""
     return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_password(stored_password, provided_password):
-    """Verifies a provided password against a stored hash."""
     return stored_password == hash_password(provided_password)
 
 def add_plan_to_history(username, workout_plan, diet_plan):
-    """Adds a generated plan to the user's history."""
     plan_entry = {
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "workout_plan": workout_plan,
@@ -171,8 +140,7 @@ def add_plan_to_history(username, workout_plan, diet_plan):
         {"$push": {"history": {"$each": [plan_entry], "$position": 0}}}
     )
 
-# Hugging Face token (securely stored in Streamlit secrets)
-# Make sure to add HF_TOKEN to your Streamlit secrets
+# Hugging Face token
 try:
     HF_TOKEN = st.secrets["HF_TOKEN"]
 except FileNotFoundError:
@@ -181,11 +149,7 @@ except FileNotFoundError:
 
 client = InferenceClient("meta-llama/Meta-Llama-3-8B-Instruct", token=HF_TOKEN)
 
-# --- Helper Function to Generate Plans ---
 def generate_plan(prompt):
-    """
-    Generates a response from the LLaMA model based on a detailed prompt.
-    """
     messages = [
         {
             "role": "system",
@@ -196,9 +160,7 @@ def generate_plan(prompt):
 
     response_text = ""
     try:
-        # Use chat_completion for conversational models like Llama-3
         for chunk in client.chat_completion(messages, max_tokens=1024, temperature=0.8, stream=True):
-            # Add a check to ensure the choices list is not empty before accessing it
             if chunk.choices and chunk.choices[0].delta.content:
                 response_text += chunk.choices[0].delta.content
     except Exception as e:
@@ -207,62 +169,88 @@ def generate_plan(prompt):
         
     return response_text.strip()
 
+# --- Mobile-Friendly UI Components ---
+def display_mobile_sidebar_button():
+    """Display a prominent button to open sidebar on mobile"""
+    st.markdown("""
+    <div style="text-align: center; margin: 1rem 0;">
+        <button class="mobile-sidebar-button" onclick="document.querySelector('[data-testid=\"stSidebar\"]').style.width = '85%'">
+            📝 Open Settings & Profile
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_mobile_instructions():
+    """Show mobile-specific instructions"""
+    st.markdown("""
+    <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #2196F3;">
+        <h4 style="margin:0 0 0.5rem 0; color: #1976d2;">📱 Mobile Tips</h4>
+        <p style="margin:0; color: #555;">
+        <strong>To access settings:</strong> Swipe from right edge or tap ☰ menu<br>
+        <strong>Need help?</strong> Use the button above to open sidebar
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 def display_modern_header():
-    """Display modern header with gradient"""
     st.markdown("""
     <div class="header-container">
-        <h1 style="margin:0; font-size: 3rem; font-weight: 700;">💪 AI Fitness Coach</h1>
-        <p style="margin:0; font-size: 1.3rem; opacity: 0.9; margin-top: 0.5rem;">
-        Get personalized workout & diet plans tailored just for you
+        <h1 style="margin:0; font-size: 2.5rem; font-weight: 700;">💪 AI Fitness Coach</h1>
+        <p style="margin:0; font-size: 1.1rem; opacity: 0.9; margin-top: 0.5rem;">
+        Get personalized workout & diet plans
         </p>
     </div>
     """, unsafe_allow_html=True)
 
 def display_features():
-    """Display feature cards"""
     st.markdown("### 🎯 What You'll Get")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
         <div class="feature-card">
-            <h3>🏋️ Personalized Workouts</h3>
+            <h4>🏋️ Personalized Workouts</h4>
             <p>Custom exercises for your goals</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div class="feature-card">
+            <h4>📊 Progress Tracking</h4>
+            <p>Monitor your fitness journey</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
         <div class="feature-card">
-            <h3>🥗 Smart Meal Plans</h3>
-            <p>Delicious & budget-friendly recipes</p>
+            <h4>🥗 Smart Meal Plans</h4>
+            <p>Delicious & budget-friendly</p>
         </div>
         """, unsafe_allow_html=True)
-    
-    with col3:
         st.markdown("""
         <div class="feature-card">
-            <h3>📊 Progress Tracking</h3>
-            <p>Monitor your fitness journey</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown("""
-        <div class="feature-card">
-            <h3>🎯 Goal-Oriented</h3>
-            <p>Plans tailored to your objectives</p>
+            <h4>🎯 Goal-Oriented</h4>
+            <p>Tailored to your objectives</p>
         </div>
         """, unsafe_allow_html=True)
 
+# --- Updated Authentication with Mobile Support ---
 def display_modern_auth():
-    """Display modern authentication in sidebar"""
+    """Display authentication in sidebar with mobile considerations"""
     with st.sidebar:
         st.markdown("""
-        <div style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px;">
-            <h2 style="color: white; margin: 0;">Fitness Coach</h2>
+        <div style="text-align: center; margin-bottom: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 15px;">
+            <h3 style="color: white; margin: 0;">Fitness Coach</h3>
             <p style="color: rgba(255,255,255,0.8); margin: 0;">AI-Powered Plans</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Mobile close button (visible only on mobile)
+        st.markdown("""
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <button style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 1.2rem;" 
+                    onclick="document.querySelector('[data-testid=\"stSidebar\"]').style.width = '0'">×</button>
         </div>
         """, unsafe_allow_html=True)
         
@@ -308,8 +296,8 @@ def display_modern_auth():
                         st.warning("Please fill all fields")
         else:
             st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem;">
-                <h4 style="color: white; margin: 0;">Welcome back!</h4>
+            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 15px; margin-bottom: 1rem;">
+                <h4 style="color: white; margin: 0;">Welcome!</h4>
                 <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0;">{st.session_state.username}</p>
             </div>
             """, unsafe_allow_html=True)
@@ -319,140 +307,7 @@ def display_modern_auth():
                 st.session_state.username = ""
                 st.rerun()
 
-def display_profile_form():
-    """Display modern profile form in sidebar"""
-    st.sidebar.markdown("### 📝 Your Profile")
-    
-    with st.sidebar:
-        with st.form(key='profile_form'):
-            st.markdown("#### Personal Info")
-            age = st.number_input("Age", min_value=16, max_value=80, value=20)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                weight = st.number_input("Weight (kg)", min_value=40.0, max_value=150.0, value=60.0, step=0.5)
-            with col2:
-                height = st.number_input("Height (cm)", min_value=140.0, max_value=220.0, value=170.0, step=0.5)
-            
-            gender = st.selectbox("Gender", ["Male", "Female", "Prefer not to say"])
-
-            st.markdown("#### 🎯 Fitness Goals")
-            fitness_goal = st.selectbox("Primary Goal", ["Lose Weight", "Gain Muscle", "Improve Fitness & Stamina"])
-            workout_days = st.slider("Workout Days per Week", 1, 7, 3)
-
-            st.markdown("#### 💪 Workout Preferences")
-            workout_location = st.selectbox("Where do you work out?", ["Home", "Gym"])
-            available_equipment = st.text_input("Equipment available", "None", placeholder="dumbbells, yoga mat...")
-
-            st.markdown("#### 🍽️ Dietary Preferences")
-            diet_pref = st.selectbox("Diet", ["Anything", "Vegetarian", "Vegan"])
-            cuisine_pref = st.text_input("Preferred Cuisine", "Indian", placeholder="Italian, Asian...")
-            allergies = st.text_input("Any Allergies?", "None")
-
-            st.markdown("#### 🤔 Additional Details")
-            special_info = st.text_area(
-                "Injuries, food dislikes, time constraints...",
-                placeholder="Tell us anything else we should know..."
-            )
-            
-            submit_button = st.form_submit_button(
-                label="🚀 Generate My Plan", 
-                use_container_width=True
-            )
-    
-    return (age, weight, height, gender, fitness_goal, workout_days, 
-            workout_location, available_equipment, diet_pref, cuisine_pref, 
-            allergies, special_info, submit_button)
-
-def display_plan_results(workout_plan, diet_plan):
-    """Display the generated plans in a modern layout"""
-    st.markdown("""
-    <div class="success-message">
-        <h3 style="margin:0; color: white;">🎉 Your Personalized Plans Are Ready!</h3>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Display Plans in Tabs
-    plan_tab1, plan_tab2 = st.tabs(["🏋️ Workout Plan", "🥗 Diet Plan"])
-    
-    with plan_tab1:
-        st.markdown("""
-        <div class="custom-card">
-            <h2 style="color: #333; margin-bottom: 1.5rem;">Your Workout Plan</h2>
-        """, unsafe_allow_html=True)
-        st.markdown(workout_plan)
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    with plan_tab2:
-        st.markdown("""
-        <div class="custom-card">
-            <h2 style="color: #333; margin-bottom: 1.5rem;">Your Diet Plan</h2>
-        """, unsafe_allow_html=True)
-        st.markdown(diet_plan)
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Download Button
-    full_plan_text = f"""
-# Your Personalized Workout & Diet Plan
-
-## 🏋️ Workout Plan
-{workout_plan}
-
----
-
-## 🥗 Diet Plan
-{diet_plan}
-"""
-    st.download_button(
-        label="📥 Download Your Full Plan",
-        data=full_plan_text,
-        file_name=f"fitness_plan_{datetime.now().strftime('%Y%m%d')}.txt",
-        mime="text/plain",
-        use_container_width=True
-    )
-
-def display_modern_history():
-    """Display modern history view"""
-    st.markdown("""
-    <div class="custom-card">
-        <h2 style="color: #333; text-align: center; margin-bottom: 2rem;">📚 Your Plan History</h2>
-    """, unsafe_allow_html=True)
-    
-    user_data = users_collection.find_one({"_id": st.session_state.username})
-    user_history = user_data.get("history", []) if user_data else []
-
-    if not user_history:
-        st.markdown("""
-        <div style="text-align: center; padding: 3rem;">
-            <h3 style="color: #666;">No plans yet</h3>
-            <p>Your fitness plans will appear here!</p>
-            <div style="font-size: 4rem;">💪</div>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        for i, entry in enumerate(user_history):
-            with st.expander(f"📅 Plan from {entry['date']}", expanded=(i==0)):
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("""
-                    <div class="plan-section">
-                        <h3 style="color: #667eea;">🏋️ Workout Plan</h3>
-                    """, unsafe_allow_html=True)
-                    st.markdown(entry["workout_plan"])
-                    st.markdown("</div>", unsafe_allow_html=True)
-                
-                with col2:
-                    st.markdown("""
-                    <div class="plan-section">
-                        <h3 style="color: #667eea;">🥗 Diet Plan</h3>
-                    """, unsafe_allow_html=True)
-                    st.markdown(entry["diet_plan"])
-                    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Main App Interface ---
+# --- Updated Main App Interface ---
 display_modern_header()
 
 # --- Authentication ---
@@ -466,42 +321,69 @@ if not st.session_state.logged_in:
     # Welcome screen for non-logged in users
     st.markdown("""
     <div class="custom-card">
-        <h2 style="text-align: center; color: #333; margin-bottom: 2rem;">Welcome to Your AI Fitness Coach! 👋</h2>
-        <p style="text-align: center; font-size: 1.2rem; color: #666; line-height: 1.6;">
-        Get personalized workout routines and diet plans crafted by AI. 
-        Whether you want to lose weight, build muscle, or improve your fitness, 
-        we'll create the perfect plan for your lifestyle.
+        <h2 style="text-align: center; color: #333; margin-bottom: 1rem;">Welcome to AI Fitness Coach! 👋</h2>
+        <p style="text-align: center; color: #666;">
+        Get personalized workout routines and diet plans crafted by AI.
         </p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Mobile-friendly access instructions
+    display_mobile_sidebar_button()
+    display_mobile_instructions()
     
     display_features()
-    
-    st.markdown("""
-    <div class="info-message">
-        <p style="margin: 0; font-size: 1.1rem;">
-        👈 <strong>Get Started:</strong> Please login or register in the sidebar to begin your fitness journey!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 # --- Main Application ---
 if st.session_state.logged_in:
-    # Get form data from sidebar
-    form_data = display_profile_form()
-    (age, weight, height, gender, fitness_goal, workout_days, 
-     workout_location, available_equipment, diet_pref, cuisine_pref, 
-     allergies, special_info, submit_button) = form_data
+    # Mobile sidebar access button
+    display_mobile_sidebar_button()
+    
+    # Profile form in sidebar
+    with st.sidebar:
+        if st.session_state.logged_in:
+            st.markdown("### 📝 Your Profile")
+            with st.form(key='profile_form'):
+                st.markdown("#### Personal Info")
+                age = st.number_input("Age", min_value=16, max_value=80, value=20)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    weight = st.number_input("Weight (kg)", min_value=40.0, max_value=150.0, value=60.0, step=0.5)
+                with col2:
+                    height = st.number_input("Height (cm)", min_value=140.0, max_value=220.0, value=170.0, step=0.5)
+                
+                gender = st.selectbox("Gender", ["Male", "Female", "Prefer not to say"])
 
-    # --- Main Application Tabs ---
+                st.markdown("#### 🎯 Fitness Goals")
+                fitness_goal = st.selectbox("Primary Goal", ["Lose Weight", "Gain Muscle", "Improve Fitness & Stamina"])
+                workout_days = st.slider("Workout Days per Week", 1, 7, 3)
+
+                st.markdown("#### 💪 Workout Preferences")
+                workout_location = st.selectbox("Where do you work out?", ["Home", "Gym"])
+                available_equipment = st.text_input("Equipment available", "None")
+
+                st.markdown("#### 🍽️ Dietary Preferences")
+                diet_pref = st.selectbox("Diet", ["Anything", "Vegetarian", "Vegan"])
+                cuisine_pref = st.text_input("Preferred Cuisine", "Indian")
+                allergies = st.text_input("Any Allergies?", "None")
+
+                st.markdown("#### 🤔 Additional Details")
+                special_info = st.text_area("Injuries, food dislikes, time constraints...")
+                
+                submit_button = st.form_submit_button(
+                    label="🚀 Generate My Plan", 
+                    use_container_width=True
+                )
+
+    # Main content area
     tab1, tab2 = st.tabs(["🎯 New Plan", "📚 History"])
 
     with tab1:
         display_features()
         
-        if submit_button:
+        if 'submit_button' in locals() and submit_button:
             with st.spinner("🔍 Analyzing your profile..."):
-                # --- Prompt Engineering ---
                 special_notes_prompt_section = ""
                 if special_info and special_info.strip():
                     special_notes_prompt_section = f"\nImportant Additional Notes from the user: {special_info}"
@@ -525,28 +407,77 @@ if st.session_state.logged_in:
                 The plan should be simple, using easily available ingredients suitable for a student's budget. Provide options for Breakfast, Lunch, Dinner, and one Snack. Make it sound delicious and motivating!
                 """
 
-            # --- Plan Generation ---
             with st.spinner("🏋️ Creating your personalized workout plan..."):
                 workout_plan = generate_plan(workout_prompt)
             
             with st.spinner("🥗 Designing your perfect diet plan..."):
                 diet_plan = generate_plan(diet_prompt)
 
-            # --- Store plan in history ---
             add_plan_to_history(st.session_state.username, workout_plan, diet_plan)
 
             # Display results
-            display_plan_results(workout_plan, diet_plan)
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin: 1rem 0;">
+                <h3 style="margin:0; color: white;">🎉 Your Personalized Plans Are Ready!</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            plan_tab1, plan_tab2 = st.tabs(["🏋️ Workout Plan", "🥗 Diet Plan"])
+            
+            with plan_tab1:
+                st.markdown("""
+                <div class="custom-card">
+                    <h3 style="color: #333; margin-bottom: 1rem;">Your Workout Plan</h3>
+                """, unsafe_allow_html=True)
+                st.markdown(workout_plan)
+                st.markdown("</div>", unsafe_allow_html=True)
+            
+            with plan_tab2:
+                st.markdown("""
+                <div class="custom-card">
+                    <h3 style="color: #333; margin-bottom: 1rem;">Your Diet Plan</h3>
+                """, unsafe_allow_html=True)
+                st.markdown(diet_plan)
+                st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.markdown("""
             <div class="custom-card">
-                <h2 style="text-align: center; color: #333; margin-bottom: 1rem;">Ready to Transform Your Fitness? 🚀</h2>
-                <p style="text-align: center; color: #666; font-size: 1.1rem;">
-                Fill out your profile in the sidebar and click <strong>"Generate My Plan"</strong> to get started!
+                <h3 style="text-align: center; color: #333; margin-bottom: 1rem;">Ready to Transform Your Fitness? 🚀</h3>
+                <p style="text-align: center; color: #666;">
+                Open the sidebar to fill out your profile and click <strong>"Generate My Plan"</strong>!
                 </p>
-                <div style="text-align: center; font-size: 4rem; margin: 2rem 0;">💪</div>
+                <div style="text-align: center; font-size: 3rem; margin: 1rem 0;">💪</div>
             </div>
             """, unsafe_allow_html=True)
 
     with tab2:
-        display_modern_history()
+        st.markdown("""
+        <div class="custom-card">
+            <h2 style="color: #333; text-align: center; margin-bottom: 1rem;">📚 Your Plan History</h2>
+        """, unsafe_allow_html=True)
+        
+        user_data = users_collection.find_one({"_id": st.session_state.username})
+        user_history = user_data.get("history", []) if user_data else []
+
+        if not user_history:
+            st.markdown("""
+            <div style="text-align: center; padding: 2rem;">
+                <h4 style="color: #666;">No plans yet</h4>
+                <p>Your fitness plans will appear here!</p>
+                <div style="font-size: 3rem;">💪</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            for i, entry in enumerate(user_history):
+                with st.expander(f"📅 Plan from {entry['date']}", expanded=(i==0)):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**🏋️ Workout Plan**")
+                        st.markdown(entry["workout_plan"])
+                    
+                    with col2:
+                        st.markdown("**🥗 Diet Plan**")
+                        st.markdown(entry["diet_plan"])
+        
+        st.markdown("</div>", unsafe_allow_html=True)
