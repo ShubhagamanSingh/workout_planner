@@ -122,6 +122,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {display: none !important;}
     [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stSidebarNavToggler"] {display: none !important;}
     
     .sidebar .sidebar-content {
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
@@ -551,4 +552,5 @@ if st.session_state.logged_in:
 
     with tab2:
         display_modern_history()
+
 
