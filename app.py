@@ -24,7 +24,7 @@ st.markdown("""
         padding: 3rem 2rem;
         border-radius: 0 0 25px 25px;
         margin-bottom: 2rem;
-        margin-top: -10rem;
+        margin-top: -5rem;
         color: white;
         text-align: center;
     }
@@ -117,12 +117,7 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    /* Hide default Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {display: none !important;}
-    [data-testid="stToolbar"] {display: none !important;}
-    [data-testid="stSidebarNavToggler"] {display: none !important;}
+    
     
     .sidebar .sidebar-content {
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
@@ -552,5 +547,3 @@ if st.session_state.logged_in:
 
     with tab2:
         display_modern_history()
-
-
