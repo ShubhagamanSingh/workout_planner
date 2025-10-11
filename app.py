@@ -120,7 +120,7 @@ st.markdown("""
     /* Hide default Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    header {display: none !important;}
     [data-testid="stToolbar"] {display: none !important;}
     
     .sidebar .sidebar-content {
@@ -551,3 +551,4 @@ if st.session_state.logged_in:
 
     with tab2:
         display_modern_history()
+
