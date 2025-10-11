@@ -21,7 +21,7 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem 1rem;
         border-radius: 0 0 25px 25px;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
         margin-top: -10rem;
         color: white;
         text-align: center;
@@ -482,5 +482,6 @@ if st.session_state.logged_in:
                         st.markdown(entry["diet_plan"])
         
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 
